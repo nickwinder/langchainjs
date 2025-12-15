@@ -907,7 +907,10 @@ export async function loadMcpTools(
               description: tool.description || "",
               schema: dereferencedSchema,
               responseFormat: "content_and_artifact",
-              metadata: { annotations: tool.annotations },
+              metadata: {
+                annotations: tool.annotations,
+                title: tool.title,
+              },
               defaultConfig: defaultToolTimeout
                 ? { timeout: defaultToolTimeout }
                 : undefined,

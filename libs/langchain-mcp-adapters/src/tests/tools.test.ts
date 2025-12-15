@@ -618,5 +618,47 @@ describe("Simplified Tool Adapter Tests", () => {
       expect(toolMessageResult.content).toEqual(expectedContentBlocks);
       expect(toolMessageResult.artifact).toEqual(expectedArtifacts);
     });
+
+    test("should preserve tool title in metadata", async () => {
+      // Set up mock response with title
+      mockClient.listTools.mockReturnValueOnce(
+        Promise.resolve({
+          tools: [
+            {
+              name: "read_annotations",
+              title: "Read Annotations",
+              description: "Read annotations in the document",
+              inputSchema: { type: "object", properties: {}, required: [] },
+              annotations: { readOnlyHint: true },
+            },
+            {
+              name: "tool_without_title",
+              description: "A tool without a title",
+              inputSchema: { type: "object", properties: {}, required: [] },
+            },
+          ],
+        })
+      );
+
+      // Load tools
+      const tools = await loadMcpTools(
+        "mockServer(should preserve tool title)",
+        mockClient as Client
+      );
+
+      // Verify results
+      expect(tools.length).toBe(2);
+
+      // First tool should have title in metadata
+      expect(tools[0].name).toBe("read_annotations");
+      expect(tools[0].metadata).toBeDefined();
+      expect(tools[0].metadata?.title).toBe("Read Annotations");
+      expect(tools[0].metadata?.annotations).toEqual({ readOnlyHint: true });
+
+      // Second tool should have undefined title in metadata
+      expect(tools[1].name).toBe("tool_without_title");
+      expect(tools[1].metadata).toBeDefined();
+      expect(tools[1].metadata?.title).toBeUndefined();
+    });
   });
 });
